@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!-- CSP support mode (required for Windows Universal apps): https://docs.angularjs.org/api/ng/directive/ngCsp -->
+<html lang="en" ng-app="app" ng-csp>
+<head>
+    <meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- JS dependencies (order matters!) -->
+    <script src="scripts/platformOverrides.js"></script>
+    <script src="lib/angular/angular.js"></script>
+    <script src="lib/onsen/js/onsenui.js"></script>
+
+    <script src="lib/react/react.js"></script>
+    <script src="lib/react/JSXTransformer.js"></script>
+    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <!-- CSS dependencies -->
+    <link rel="stylesheet" href="lib/onsen/css/onsenui.css" />
+    <link rel="stylesheet" href="lib/onsen/css/onsen-css-components-blue-basic-theme.css" />
+
+    <!-- CSP support mode (required for Windows Universal apps) -->
+    <link rel="stylesheet" href="lib/angular/angular-csp.css" />
+
+
+    <!-- --------------- App init --------------- -->
+
+    <style type="text/css">
+      .centered {
+        margin: auto;
+        left: 1%;
+        right: 1%;
+        top: 1%;
+        bottom: 70px;
+        position: absolute;
+      }
+    </style>
+
+    <script>
+        angular.module('app', ['onsen']);
+    </script>
+
+    <script type="text/jsx">
+        /** @jsx React.DOM */
+
+        var Carousel = React.createClass({
+          render: function() {
+            return (
+              <div>
+                <ons-carousel id="myCarousel" swipeable overscrollable auto-scroll fullscreen auto-scroll-ratio="0.2" var="carousel">
+                  <PictureList apiKey="642176ece1e7445e99244cec26f4de1f" />
+                </ons-carousel>
+              </div>
+            );
+          }
+        });
+
+        // In this example we also have two components - a picture and
+        // a picture list. The pictures are fetched from Instagram via AJAX.
+
+        var PictureList = React.createClass({
+
+          getInitialState: function(){
+
+            // The pictures array will be populated via AJAX, and
+            // the favorites one when the user clicks on an image:
+
+            return {
+              pictures: []
+            };
+          },
+
+          componentDidMount: function(){
+
+            // When the component loads, send a jQuery AJAX request
+
+            var self = this;
+
+            // API endpoint for Instagram's popular images for the day
+
+            var url = 'https://api.instagram.com/v1/media/popular?client_id=' + this.props.apiKey + '&callback=?';
+
+            var pictures;
+
+            $.getJSON(url, function(result){
+
+              if(!result || !result.data || !result.data.length){
+                  return;
+              }
+
+             pictures = result.data.map(function(p){
+
+                  return {
+                      id: p.id,
+                      url: p.link,
+                      src: p.images.low_resolution.url,
+                      title: p.caption ? p.caption.text : ''
+                  };
+              });
+
+              // Update the component's state. This will trigger a render.
+
+              self.setState({ pictures: pictures });
+            });
+          },
+
+          componentDidUpdate: function(){
+
+            // Compiles the Carousel after the content has been rendered
+
+            ons.compile(document.getElementById('myCarousel'));
+          },
+
+          render: function() {
+
+              return (
+                <div className="item">
+                  <div style={{textAlign: "center", marginTop: "20px", fontSize: "x-large", backgroundColor: "black", color: "white", height: "30px"}}>Swipe Left/Right</div>
+                  {this.state.pictures.map(function(value) {
+                    return <ons-carousel-item key={value.id} style={{backgroundColor: "red",  marginTop: "20px"}}>
+                        <img className="centered" key={value.id} src={value.src}></img>
+                      </ons-carousel-item>
+                  })}
+                </div>
+              );
+          }
+      });
+
+      // Render the PictureList component, and add it to body.
+      // I am using an API key from Instagram
+
+      React.render(
+          <Carousel />,
+          document.getElementById('content')
+      );
+
+    </script>
+
+</head>
+
+<body>
+        <ons-page>
+            <ons-toolbar>
+                <div class="center">Onsen UI & React Sample App</div>
+            </ons-toolbar>
+
+            <div id="content" style="background-color: red"></div>
+
+        </ons-page>
+</body>
+</html>
