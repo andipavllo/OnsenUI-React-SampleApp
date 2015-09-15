@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<!-- CSP support mode (required for Windows Universal apps): https://docs.angularjs.org/api/ng/directive/ngCsp -->
-<html lang="en" ng-app="app" ng-csp>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
 
     <!-- JS dependencies (order matters!) -->
-    <script src="scripts/platformOverrides.js"></script>
     <script src="lib/angular/angular.js"></script>
     <script src="lib/onsen/js/onsenui.js"></script>
 
@@ -18,9 +16,6 @@
     <!-- CSS dependencies -->
     <link rel="stylesheet" href="lib/onsen/css/onsenui.css" />
     <link rel="stylesheet" href="lib/onsen/css/onsen-css-components-blue-basic-theme.css" />
-
-    <!-- CSP support mode (required for Windows Universal apps) -->
-    <link rel="stylesheet" href="lib/angular/angular-csp.css" />
 
 
     <!-- --------------- App init --------------- -->
@@ -37,7 +32,7 @@
     </style>
 
     <script>
-        angular.module('app', ['onsen']);
+        ons.bootstrap();
     </script>
 
     <script type="text/jsx">
@@ -126,12 +121,11 @@
           }
       });
 
-      // Render the PictureList component, and add it to body.
-      // I am using an API key from Instagram
+      // Renders the Carousel component, and add it to the content div.
 
       React.render(
-          <Carousel />,
-          document.getElementById('content')
+        <Carousel />,
+        document.getElementById('content')
       );
 
     </script>
@@ -144,7 +138,7 @@
                 <div class="center">Onsen UI & React Sample App</div>
             </ons-toolbar>
 
-            <div id="content" style="background-color: red"></div>
+            <div id="content"></div>
 
         </ons-page>
 </body>
