@@ -5,6 +5,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
 
+    <script>
+      document.registerElement = undefined;
+    </script>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="lib/onsen/js/ons-core.js"></script>
     <script src="lib/react/react.js"></script>
@@ -23,6 +27,7 @@
         right: 0;
         max-width: 85%;
         margin: auto;
+        transform: translate3d(0, -10%, 0);
       }
 
       .navigation-bar {
@@ -50,6 +55,26 @@
         color: #125688;
         z-index: 1;
       }
+
+      .refresh-button {
+        position: absolute;
+        font-size: 30px;
+        right: 50%;
+        bottom: 20px;
+        color: #125688;
+        z-index: 1;
+        transform: translate3d(50%, 0, 0);
+      }
+
+      .refresh-button--loading > ons-icon {
+        -webkit-animation:spin 1s ease-in infinite;
+        -moz-animation:spin 1s ease-in infinite;
+        animation:spin 1s ease-in infinite;
+      }
+
+      @-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+      @-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+      @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
 
     </style>
 
@@ -84,37 +109,8 @@
           },
 
           componentDidMount: function(){
-
-            // When the component loads, send a jQuery AJAX request
-
-            var self = this;
-
-            // API endpoint for Instagram's popular images for the day
-
-            var url = 'https://api.instagram.com/v1/media/popular?client_id=' + this.props.apiKey + '&callback=?';
-
-            var pictures;
-
-            $.getJSON(url, function(result){
-
-              if(!result || !result.data || !result.data.length){
-                  return;
-              }
-
-             pictures = result.data.map(function(p){
-
-                  return {
-                      id: p.id,
-                      url: p.link,
-                      src: p.images.low_resolution.url,
-                      title: p.caption ? p.caption.text : ''
-                  };
-              });
-
-              // Update the component's state. This will trigger a render.
-
-              self.setState({ pictures: pictures });
-            });
+            // When the component loads, refresh the images.
+            this.refresh();
           },
 
           componentDidUpdate: function(){
@@ -129,10 +125,54 @@
             this.refs.carousel.next();
           },
 
+          refresh: function() {
+            var self = this;
+
+            // API endpoint for Instagram's popular images for the day
+            var url = 'https://api.instagram.com/v1/media/popular?client_id=' + this.props.apiKey + '&callback=?';
+
+            // Empty the current array. This will trigger a render.
+            this.setState({pictures: [], loading: true});
+
+            // Fetch some new images.
+            $.getJSON(url, function(result){
+              if(!result || !result.data || !result.data.length){
+                  return;
+              }
+
+              var pictures = result.data.map(function(p){
+                return {
+                    id: p.id,
+                    url: p.link,
+                    src: p.images.low_resolution.url,
+                    title: p.caption ? p.caption.text : ''
+                };
+              });
+
+              // Update the component's state. This will trigger a render.
+              self.setState({pictures: pictures, loading: false});
+            });
+          },
+
           render: function() {
+              var refreshButton;
+
+              // Make the refresh button spin and disabled it while loading.
+              if (this.state.loading) {
+                refreshButton = <div className="refresh-button refresh-button--loading">
+                  <ons-icon icon="refresh"></ons-icon>
+                </div>;
+              }
+              else {
+                refreshButton = <div className="refresh-button" onClick={this.refresh}>
+                  <ons-icon icon="refresh"></ons-icon>
+                </div>;
+              }
+
               return (
                 <ons-carousel ref="carousel" swipeable auto-scroll fullscreen overscrollable>
                   <ons-icon class="prev-button" onClick={this.prev} icon="arrow-left"></ons-icon>
+                  {refreshButton}
                   <ons-icon class="next-button" onClick={this.next} icon="arrow-right"></ons-icon>
                   {this.state.pictures.map(function(value) {
                     return <ons-carousel-item key={value.id}>
