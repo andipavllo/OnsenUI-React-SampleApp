@@ -83,19 +83,6 @@
     <script type="text/jsx">
         /** @jsx React.DOM */
 
-        var Carousel = React.createClass({
-          render: function() {
-            return (
-              <div>
-                <PictureList apiKey="642176ece1e7445e99244cec26f4de1f" />
-              </div>
-            );
-          }
-        });
-
-        // In this example we also have two components - a picture and
-        // a picture list. The pictures are fetched from Instagram via AJAX.
-
         var PictureList = React.createClass({
 
           getInitialState: function(){
@@ -186,7 +173,7 @@
 
       // Renders the Carousel component, and add it to the content div.
       React.render(
-        <Carousel />,
+        <PictureList apiKey="642176ece1e7445e99244cec26f4de1f" />,
         document.getElementById('content')
       );
     </script>
